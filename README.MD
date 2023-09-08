@@ -17,7 +17,16 @@ git clone git@github.com:dhrleandro/rinha-de-compiler-php.git
 
 ### With Docker
 
-```
+**Docker command**
+```sh
 docker build -t rinha-de-compiler-php .
 docker run -it --memory="2g" --memory-swap="0" --cpus="2" rinha-de-compiler-php
+```
+
+or
+
+**Makefile command**
+```sh
+make build
+make run
 ```
