@@ -37,5 +37,5 @@ You need PHP 8 and Composer 2
 
 ```sh
 composer install
-php index.html
+php index.php
 ```

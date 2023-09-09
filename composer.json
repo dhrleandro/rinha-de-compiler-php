@@ -5,7 +5,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "LeandroDaher\\RinhaDeCompilerPhp\\": "src/"
+            "LeandroDaher\\RinhaDeCompilerPhp\\": "src/",
+            "LeandroDaher\\RinhaDeCompilerPhp\\Nodes\\": "src/nodes/"
         }
     },
     "authors": [
