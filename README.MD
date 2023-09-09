@@ -30,3 +30,12 @@ or
 make build
 make run
 ```
+
+### Without Docker
+
+You need PHP 8 and Composer 2
+
+```sh
+composer install
+php index.html
+```
