@@ -4,6 +4,6 @@ namespace LeandroDaher\RinhaDeCompilerPhp\Nodes;
 
 use LeandroDaher\RinhaDeCompilerPhp\Nodes\Term;
 
-class First implements Term {
-
+class First implements Term
+{
 }

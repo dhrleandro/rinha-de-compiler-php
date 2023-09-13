@@ -2,4 +2,6 @@
 
 namespace LeandroDaher\RinhaDeCompilerPhp\Nodes;
 
-interface Term {}
+interface Term
+{
+}
