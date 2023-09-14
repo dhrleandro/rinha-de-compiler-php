@@ -54,7 +54,7 @@ class Lexer
             if (empty($value))
                 continue;
 
-            $match = preg_match('/^[0-9\*\/\-\+\^\(\)]$/', $value);
+            $match = preg_match('/[0-9\*\/\-\+\^\(\)\.]/', $value);
             if ($match) {
                 $this->tokens[] = $value;
             } else {
@@ -79,7 +79,7 @@ class Lexer
 
     public function isNumber(string $token): bool
     {
-        return in_array($token, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
+        return is_numeric($token);
     }
 
     public function isOperator(string $token): bool
@@ -147,10 +147,10 @@ class Parser
 
         while (count($this->stack) > 0) {
             assert(end($this->stack) !== '(');
-            $output .= array_pop($this->stack);
+            $output .= ' ' . array_pop($this->stack);
         }
 
-        return $output;
+        return trim($output);
     }
 
     private function handleToken(string $token): string
@@ -159,7 +159,7 @@ class Parser
 
         switch (true) {
             case $this->lexer->isNumber($token):
-                $output .= $token;
+                $output .= ' ' . $token;
                 break;
 
             case $this->lexer->isOperator($token):
@@ -174,7 +174,7 @@ class Parser
                         (self::OPERATORS[$op2]['precedence'] === self::OPERATORS[$op1]['precedence'] &&
                         self::OPERATORS[$op1]['assoc'] === self::ASSOC_LEFT))
                 ) {
-                    $output .= array_pop($this->stack);
+                    $output .= ' ' . array_pop($this->stack);
                     $op2 = end($this->stack);
                 }
                 $this->stack[] = $op1;
@@ -188,7 +188,7 @@ class Parser
                 $topOfStack = end($this->stack);
                 while ($topOfStack !== '(') {
                     assert(count($this->stack) > 0);
-                    $output .= array_pop($this->stack);
+                    $output .= ' ' . array_pop($this->stack);
                     $topOfStack = end($this->stack);
                 }
                 assert(end($this->stack) === '(');
@@ -204,21 +204,81 @@ class Parser
     }
 }
 
+class Calculator
+{
+    private Lexer $lexer;
+    private array $stack;
 
-$expression = '1 + 2 * 3 - 4';
+    public function __construct(Lexer $lexer) {
+        $this->lexer = $lexer;
+        $this->stack = [];
+    }
+
+    private function handleToken(string $token)
+    {
+        if ($this->lexer->isNumber($token)) {
+            $this->stack[] = $token;
+            return;
+        }
+
+        //$left = parse;
+        $right = 0;
+
+        switch ($token) {
+            case '+':
+                # code...
+                break;
+            case '-':
+                # code...
+                break;
+            case '*':
+                # code...
+                break;
+            case '/':
+                # code...
+                break;
+            case '^':
+                # code...
+                break;
+            default:
+                # code...
+                break;
+        }
+    }
+
+     /**
+     * Return Reverse Polish Notation
+     * @return string
+     */
+    public function calc(): string
+    {
+        $output = '';
+        $this->stack = [];
+
+        $token = $this->lexer->next();
+        while (!empty($token)) {
+            $output .= $this->handleToken($token);
+            $token = $this->lexer->next();
+        }
+
+        return $output;
+    }
+}
+
+$expression = '1.5 + 2 * 3.9 - 4';
 $lexer = new Lexer($expression);
 $parser = new Parser($lexer);
 
-echo "Infix:\n$expression\n";
-echo "Postfix:\n";
-echo $parser->rpn(); // 123*+4-
+echo "Infix: $expression\n";
+echo "Expected: 1 2 3 * + 4 -\n";
+echo "Postfix (result): ".$parser->rpn()."\n"; // 1 2 3 * + 4 -
 echo "\n\n";
 
 $expression = '3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3';
 $lexer = new Lexer($expression);
 $parser = new Parser($lexer);
 
-echo "Infix:\n$expression\n";
-echo "Postfix:\n";
-echo $parser->rpn(); // 342*15-23^^/+
-echo "\n\n";
+echo "Infix: $expression\n";
+echo "Expected: 3 4 2 * 15 - 23 ^ ^ / +\n";
+echo "Postfix (result): ".$parser->rpn()."\n"; // 3 4 2 * 15 - 23 ^ ^ / +
+echo "\n";
