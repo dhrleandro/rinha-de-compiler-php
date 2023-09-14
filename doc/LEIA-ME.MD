@@ -1,23 +1,23 @@
-# Compiler Battle (Rinha de Compiler) - PHP Implementation
+# Rinha de Compiler - PHP Implementation
 
-[en] | [[pt-br]](./doc/LEIA-ME.MD)
+[[en]](../README.MD) | [pt-br]
 
-Interpreter implemented in PHP for the Compiler Battle
+Interpretador implementado em PHP para a Rinha de Compiler
 
 https://github.com/aripiprazole/rinha-de-compiler/tree/main
 
 ## EXPERTIMENTS
 
-The `./src/experiments` folder is not part of the project itself, but it contains fun studies that this competition gave me.
+A pasta `./src/experiments` não faz parte do projeto em si, mas contém estudos divertidos que esta competição me proporcionou.
 
-## HOW TO RUN
+## COMO EXECUTAR
 
 **Clone**
 ```
 git clone git@github.com:dhrleandro/rinha-de-compiler-php.git
 ```
 
-### With Docker
+### Com Docker
 
 **Docker command**
 ```sh
@@ -33,9 +33,9 @@ make build
 make run
 ```
 
-### Without Docker
+### Sem Docker
 
-You need PHP 8 and Composer 2
+Você precisa do PHP 8 e Composer 2
 
 ```sh
 composer install
