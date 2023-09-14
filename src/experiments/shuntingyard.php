@@ -221,28 +221,28 @@ class Calculator
             return;
         }
 
-        //$left = parse;
-        $right = 0;
+        $right = floatval(array_pop($this->stack));
+        $left = floatval(array_pop($this->stack));
 
         switch ($token) {
             case '+':
-                # code...
-                break;
+                $this->stack[] = $left + $right;
+                return;
             case '-':
-                # code...
-                break;
+                $this->stack[] = $left - $right;
+                return;
             case '*':
-                # code...
-                break;
+                $this->stack[] = $left * $right;
+                return;
             case '/':
-                # code...
-                break;
+                $this->stack[] = $left / $right;
+                return;
             case '^':
-                # code...
-                break;
+                $this->stack[] = $left ** $right;
+                return;
             default:
-                # code...
-                break;
+                throw new Error("Invalid token: $token");
+                return;
         }
     }
 
@@ -252,27 +252,37 @@ class Calculator
      */
     public function calc(): string
     {
-        $output = '';
         $this->stack = [];
 
         $token = $this->lexer->next();
         while (!empty($token)) {
-            $output .= $this->handleToken($token);
+            $this->handleToken($token);
             $token = $this->lexer->next();
         }
 
-        return $output;
+        return array_pop($this->stack);
     }
 }
 
-$expression = '1.5 + 2 * 3.9 - 4';
+$expression = '1 + 2 * 3 - 4';
 $lexer = new Lexer($expression);
 $parser = new Parser($lexer);
 
 echo "Infix: $expression\n";
 echo "Expected: 1 2 3 * + 4 -\n";
-echo "Postfix (result): ".$parser->rpn()."\n"; // 1 2 3 * + 4 -
+$rpn = $parser->rpn();
+echo "Postfix (result): ".$rpn."\n"; // 1 2 3 * + 4 -
+
+// result
+$lexer = new Lexer($rpn);
+$calc = new Calculator($lexer);
+echo "Expected Result: 3\n";
+echo "Result: ".$calc->calc()."\n"; // 3
+
 echo "\n\n";
+
+
+
 
 $expression = '3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3';
 $lexer = new Lexer($expression);
@@ -280,5 +290,13 @@ $parser = new Parser($lexer);
 
 echo "Infix: $expression\n";
 echo "Expected: 3 4 2 * 15 - 23 ^ ^ / +\n";
-echo "Postfix (result): ".$parser->rpn()."\n"; // 3 4 2 * 15 - 23 ^ ^ / +
+$rpn = $parser->rpn();
+echo "Postfix (result): ".$rpn."\n"; // 3 4 2 * 15 - 23 ^ ^ / +
+
+// result
+$lexer = new Lexer($rpn);
+$calc = new Calculator($lexer);
+echo "Expected Result: 3.0001220703125\n";
+echo "Result: ".$calc->calc()."\n"; // 3.0001220703125
+
 echo "\n";
