@@ -39,4 +39,186 @@ while there are tokens on the operator stack:
     pop the operator from the operator stack onto the output queue
 */
 
-$tokens = ['3', '+', '4', '*', '2', '/', '(', '1', '−', '5', ')', '^', '2', '^', '3'];
+class Lexer
+{
+    private array $tokens;
+    private int $index;
+    private string $look;
+
+    public function __construct(string $expression)
+    {
+        $this->tokens = [];
+
+        foreach (explode(' ', $expression) as $value) {
+            $value = trim($value);
+            if (empty($value))
+                continue;
+
+            $match = preg_match('/^[0-9\*\/\-\+\^\(\)]$/', $value);
+            if ($match) {
+                $this->tokens[] = $value;
+            } else {
+                throw new \Exception("Unrecognized token '$value'", 1);
+            }
+        }
+
+        $this->index = 0;
+        $this->look = '';
+    }
+
+    public function next(): string
+    {
+        if (!isset($this->tokens[$this->index])) {
+            return '';
+        }
+
+        $this->look = $this->tokens[$this->index];
+        $this->index++;
+        return $this->look;
+    }
+
+    public function isNumber(string $token): bool
+    {
+        return in_array($token, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
+    }
+
+    public function isOperator(string $token): bool
+    {
+        return in_array($token, ['+', '-', '*', '/', '^']);
+    }
+
+    public function getTokens(): array
+    {
+        return $this->tokens;
+    }
+}
+
+class Parser
+{
+    private Lexer $lexer;
+    private array $stack;
+
+    const ASSOC_RIGHT = 'right';
+    const ASSOC_LEFT = 'left';
+
+    const OPERATORS = array(
+        '^' => [
+            'precedence' => 4,
+            'assoc' => self::ASSOC_RIGHT,
+        ],
+        '*' => [
+            'precedence' => 3,
+            'assoc' => self::ASSOC_LEFT,
+        ],
+        '/' => [
+            'precedence' => 3,
+            'assoc' => self::ASSOC_LEFT,
+        ],
+        '+' => [
+            'precedence' => 2,
+            'assoc' => self::ASSOC_LEFT,
+        ],
+        '-' => [
+            'precedence' => 2,
+            'assoc' => self::ASSOC_LEFT,
+        ],
+    );
+
+    public function __construct(Lexer $lexer)
+    {
+        $this->lexer = $lexer;
+        $this->stack = [];
+    }
+
+    /**
+     * Return Reverse Polish Notation
+     * @return string
+     */
+    public function rpn(): string
+    {
+        $output = '';
+        $this->stack = [];
+
+        $token = $this->lexer->next();
+        while (!empty($token)) {
+            $output .= $this->handleToken($token);
+            $token = $this->lexer->next();
+        }
+
+        while (count($this->stack) > 0) {
+            assert(end($this->stack) !== '(');
+            $output .= array_pop($this->stack);
+        }
+
+        return $output;
+    }
+
+    private function handleToken(string $token): string
+    {
+        $output = '';
+
+        switch (true) {
+            case $this->lexer->isNumber($token):
+                $output .= $token;
+                break;
+
+            case $this->lexer->isOperator($token):
+                $op1 = $token;
+                // look at the top of the stack (last element of the array)
+                $op2 = end($this->stack);
+
+                while (
+                    $op2 !== false &&
+                    $op2 !== '(' &&
+                    (self::OPERATORS[$op2]['precedence'] > self::OPERATORS[$op1]['precedence'] ||
+                        (self::OPERATORS[$op2]['precedence'] === self::OPERATORS[$op1]['precedence'] &&
+                        self::OPERATORS[$op1]['assoc'] === self::ASSOC_LEFT))
+                ) {
+                    $output .= array_pop($this->stack);
+                    $op2 = end($this->stack);
+                }
+                $this->stack[] = $op1;
+                break;
+
+            case $token === '(':
+                $this->stack[] = $token;
+                break;
+
+            case $token === ')':
+                $topOfStack = end($this->stack);
+                while ($topOfStack !== '(') {
+                    assert(count($this->stack) > 0);
+                    $output .= array_pop($this->stack);
+                    $topOfStack = end($this->stack);
+                }
+                assert(end($this->stack) === '(');
+                array_pop($this->stack);
+                break;
+
+            default:
+                throw new \Exception('Error');
+                break;
+        }
+
+        return $output;
+    }
+}
+
+
+$expression = '1 + 2 * 3 - 4';
+$lexer = new Lexer($expression);
+$parser = new Parser($lexer);
+
+echo "Infix:\n$expression\n";
+echo "Postfix:\n";
+echo $parser->rpn(); // 123*+4-
+echo "\n\n";
+
+$expression = '3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3';
+$lexer = new Lexer($expression);
+$parser = new Parser($lexer);
+
+echo "Infix:\n$expression\n";
+echo "Postfix:\n";
+echo $parser->rpn(); // 342*15-23^^/+
+echo "\n\n";
