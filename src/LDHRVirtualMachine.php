@@ -87,9 +87,10 @@ class LDHRVirtualMachine
 
     /**
      * Can be a numeric value or an $label key
-     * @var int[]
+     * @var array<int>[] key-value array of array\<int\>
      */
-    private array $vars;
+    private array $scopes;
+    private int $scopeIndex;
 
     /**
      * @var GenericStack<int>
@@ -164,7 +165,10 @@ class LDHRVirtualMachine
 
         $this->bytecode = $commands;
 
-        $this->vars = [];
+        $this->scopeIndex = 0;
+        $this->scopes = [];
+        $this->scopes[$this->scopeIndex] = [];
+
         $this->registerStack = new GenericStack('integer');
         $this->paramStack = new GenericStack('integer');
         $this->returnStack = new GenericStack('integer');
@@ -180,8 +184,8 @@ class LDHRVirtualMachine
         $value = null;
         if (Register::isRegister($param1)) {
             $value = $this->registerState[$param1];
-        } elseif (isset($this->vars[$param1])) {
-            $value = $this->vars[$param1];
+        } elseif (isset($this->scopes[$this->scopeIndex][$param1])) {
+            $value = $this->scopes[$this->scopeIndex][$param1];
         } elseif (is_numeric($param1)) {
             $value = intval($param1);
         } else {
@@ -192,19 +196,19 @@ class LDHRVirtualMachine
 
     public function popStack(GenericStack $stack, string $param1)
     {
-        if (!Register::isRegister($param1) && !isset($this->vars[$param1])) {
+        if (!Register::isRegister($param1) && !isset($this->scopes[$this->scopeIndex][$param1])) {
             throw new \Exception("$param1 must be a Register or Var", 1);
         }
         if (Register::isRegister($param1)) {
             $this->registerState[$param1] = $stack->pop();
         } else {
-            $this->vars[$param1] = $stack->pop();
+            $this->scopes[$this->scopeIndex][$param1] = $stack->pop();
         }
     }
 
     public function isRegisterOrVariable(string $param): bool
     {
-        return Register::isRegister($param) || isset($this->vars[$param]);
+        return Register::isRegister($param) || isset($this->scopes[$this->scopeIndex][$param]);
     }
 
     public function checkIsRegisterOrVariable(string $param): void
@@ -219,24 +223,24 @@ class LDHRVirtualMachine
 
             if (Register::isRegister($destiny)) {
                 $this->registerState[$destiny] = $this->registerState[$origin];
-            } elseif (isset($this->vars[$destiny])) {
-                $this->vars[$destiny] = $this->registerState[$origin];
+            } elseif (isset($this->scopes[$this->scopeIndex][$destiny])) {
+                $this->scopes[$this->scopeIndex][$destiny] = $this->registerState[$origin];
             }
-        } elseif (isset($this->vars[$origin])) {
+        } elseif (isset($this->scopes[$this->scopeIndex][$origin])) {
 
             if (Register::isRegister($destiny)) {
-                $this->registerState[$destiny] = $this->vars[$origin];
-            } elseif (isset($this->vars[$destiny])) {
-                $this->vars[$destiny] = $this->vars[$origin];
+                $this->registerState[$destiny] = $this->scopes[$this->scopeIndex][$origin];
+            } elseif (isset($this->scopes[$this->scopeIndex][$destiny])) {
+                $this->scopes[$this->scopeIndex][$destiny] = $this->scopes[$this->scopeIndex][$origin];
             }
         } elseif (!Register::isRegister($destiny) && isset($this->labels[$origin])) {
-            $this->vars[$destiny] = $origin;
+            $this->scopes[$this->scopeIndex][$destiny] = $origin;
         } elseif (is_numeric($origin)) {
 
             if (Register::isRegister($destiny)) {
                 $this->registerState[$destiny] = intval($origin);
-            } elseif (isset($this->vars[$destiny])) {
-                $this->vars[$destiny] = intval($origin);
+            } elseif (isset($this->scopes[$this->scopeIndex][$destiny])) {
+                $this->scopes[$this->scopeIndex][$destiny] = intval($origin);
             }
         } else {
             throw new \Exception("Unexpected Error", 1);
@@ -247,8 +251,8 @@ class LDHRVirtualMachine
     {
         if (Register::isRegister($identifier)) {
             $value = $this->registerState[$identifier];
-        } elseif (isset($this->vars[$identifier])) {
-           $value = $this->vars[$identifier];
+        } elseif (isset($this->scopes[$this->scopeIndex][$identifier])) {
+           $value = $this->scopes[$this->scopeIndex][$identifier];
            /*if (isset($this->labels[$value])) {
             $value = $this->labels[$value];
            }*/
@@ -264,8 +268,13 @@ class LDHRVirtualMachine
         $value = null;
         if (isset($this->labels[$identifier])) {
             $value = $this->labels[$identifier];
-        } elseif (isset($this->vars[$identifier])) {
-            $label = $this->vars[$identifier];
+        } elseif (isset($this->scopes[$this->scopeIndex][$identifier])) {
+            $label = $this->scopes[$this->scopeIndex][$identifier];
+            if (isset($this->labels[$label])) {
+                $value = $this->labels[$label];
+            }
+        } elseif (isset($this->scopes[0][$identifier])) {
+            $label = $this->scopes[0][$identifier];
             if (isset($this->labels[$label])) {
                 $value = $this->labels[$label];
             }
@@ -323,6 +332,7 @@ class LDHRVirtualMachine
             switch ($opcode) {
 
                 case OpCode::RET:
+                    $this->scopeIndex--;
                     if ($retIndex < 0) {
                         $exit = true;
                     } else {
@@ -332,9 +342,9 @@ class LDHRVirtualMachine
 
                 case OpCode::DEF:
                     $param = $line[1];
-                    if (isset($this->vars[$param]))
+                    if (isset($this->scopes[$this->scopeIndex][$param]))
                         throw new \Exception("$param has already been defined");
-                    $this->vars[$param] = 0;
+                    $this->scopes[$this->scopeIndex][$param] = 0;
                     break;
 
                 case OpCode::MOV:
@@ -377,6 +387,7 @@ class LDHRVirtualMachine
                     break;
 
                 case OpCode::CALL:
+                    $this->scopeIndex++;
                     $param1 = $line[1];
                     $retIndex = $head;
                     $head = $this->getLableIndex($param1);
@@ -457,7 +468,9 @@ class LDHRVirtualMachine
                     var_dump($this->registerStack->getList());
                     var_dump($this->paramStack->getList());
                     var_dump($this->returnStack->getList());
-                    var_dump($this->vars);
+                    var_dump("Scope index: ".$this->scopeIndex);
+                    var_dump("Scopes: ");
+                    var_dump($this->scopes);
                     var_dump($this->labels);
 
                     throw new \Exception("$opcode Unexpected Error", 1);
@@ -476,5 +489,13 @@ class LDHRVirtualMachine
         }
 
         echo "\nEnd Of File\n";
+    }
+
+    function printBytecode()
+    {
+        foreach ($this->bytecode as $key => $line) {
+            echo "[$key] ".implode(' ', $line)."\n";
+        }
+        echo "\n\n";
     }
 }
