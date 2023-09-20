@@ -44,6 +44,10 @@ class TreeWalkInterpreter
                         return $lhs < $rhs;
                     case 'Eq':
                         return $lhs == $rhs;
+                    case 'And':
+                        return $lhs && $rhs;
+                    case 'Or':
+                        return $lhs || $rhs;
                     default:
                         throw new \Exception("Unknown operator $node->op");
                 }
@@ -60,10 +64,10 @@ class TreeWalkInterpreter
                 $term = $this->interpret($node->value, $environment);
                 switch (gettype($term)) {
                     case 'integer':
-                        echo $term;
+                        //echo $term;
                         return $term;
                     case 'string':
-                        echo $term;
+                        //echo $term;
                         return $term;
                 }
             case 'Var':

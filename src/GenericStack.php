@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace LeandroDaher\RinhaDeCompilerPhp;
 
-class GenericList
+class GenericStack
 {
     private string $allowedClassOrInterface;
     private array $list;
 
     public function __construct(string $allowedClassOrInterface, array $objects = []) {
+
+        $this->list = [];
 
         if (!$this->classExists($allowedClassOrInterface, true)) {
             throw new \Exception("Class name $allowedClassOrInterface not exists or not autoloaded", 1);
@@ -29,6 +31,11 @@ class GenericList
         }
     }
 
+    public function pop(): mixed
+    {
+        return array_pop($this->list);
+    }
+
     public function setList(array $objects)
     {
         foreach ($objects as $object) {
@@ -43,13 +50,21 @@ class GenericList
 
     public function classExists(string $className): bool
     {
-        return class_exists($className, true) || interface_exists($className, true);
+        return class_exists($className, true)   ||
+            interface_exists($className, true)  ||
+            in_array($className, ['integer', 'string']);
     }
 
     public function allowedClassOrAllowedInterfaceImplementation(mixed $item): bool
     {
-        $class = get_class($item);
-        $implements = class_implements($item, true);
+        try {
+            $class = get_class($item);
+            $implements = class_implements($item, true);
+        } catch(\Throwable $e) {
+            $class = gettype($item);
+            $implements = [];
+        }
+
 
         $listOfClassAndImplements = array_merge([$class], $implements);
         if (in_array($this->allowedClassOrInterface, $listOfClassAndImplements)) {

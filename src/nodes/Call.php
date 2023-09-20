@@ -4,7 +4,7 @@ namespace LeandroDaher\RinhaDeCompilerPhp\Nodes;
 
 use LeandroDaher\RinhaDeCompilerPhp\Nodes\Term;
 use LeandroDaher\RinhaDeCompilerPhp\Nodes\Location;
-use LeandroDaher\RinhaDeCompilerPhp\GenericList;
+use LeandroDaher\RinhaDeCompilerPhp\GenericStack;
 
 class Call implements Term
 {
@@ -13,23 +13,23 @@ class Call implements Term
 
     /**
      * List of Term
-     * @var GenericList<Term>
+     * @var Term[]
      */
-    public GenericList $arguments;
+    public GenericStack $arguments;
 
     public Location $location;
 
     /**
      * @param null|string $kind
      * @param null|Term $callee
-     * @param null|GenericList<Term> $arguments
+     * @param null|Term[] $arguments
      * @param null|Location $location
      * @return void
      */
     public function __construct(
         ?string $kind,
         ?Term $callee,
-        ?GenericList $arguments,
+        ?GenericStack $arguments,
         ?Location $location
     ) {
         $this->kind = $kind ?? '';
@@ -37,6 +37,6 @@ class Call implements Term
         $this->location = $location ?? Location::create();
 
         $argumentsTemp = $arguments ?? [];
-        $this->arguments = new GenericList(Term::class, $argumentsTemp);
+        $this->arguments = new GenericStack(Term::class, $argumentsTemp);
     }
 }

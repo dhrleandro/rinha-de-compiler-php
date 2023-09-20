@@ -1,0 +1,60 @@
+; sum.json
+
+MAIN:
+    DEF sum
+    MOV sum @FUNCTION1
+    ; PRINT BEGIN
+    ; CALL Begin arguments
+    ; argument 1
+    MOV AX 5
+    PUSH_SP AX ; push param AX value to top of SP (stack of params)
+    ; CALL End arguments
+    CALL @sum
+    POP_SRET AX
+    PRINT AX
+    ; PRINT END
+
+
+FUNCTION1:
+    DEF n
+    POP_SP n ; pop param from top of SP (stack of params)
+    ; - - - - IF - - - -
+    IF1:
+        MOV AX n
+        PUSH_SR AX ; push AX value to top of SR (stack of registers)
+        MOV AX 1
+        MOV BX AX
+        POP_SR AX ; pop top of SR (stack of registers) value to AX register
+        CMP AX BX
+        SET_EQ AX
+        JT AX THEN1 ; jump to then if AX is 1 (true)
+        JF AX OTHERWISE1 ; jump to otherwise if AX is 0 (false)
+        THEN1:
+            MOV AX n
+            PUSH_SRET AX
+            RET
+            JMP ENDIF1 ; jump to endif (unconditional)
+        OTHERWISE1:
+            MOV AX n
+            PUSH_SR AX ; push AX value to top of SR (stack of registers)
+            ; CALL Begin arguments
+            ; argument 1
+            MOV AX n
+            PUSH_SR AX ; push AX value to top of SR (stack of registers)
+            MOV AX 1
+            MOV BX AX
+            POP_SR AX ; pop top of SR (stack of registers) value to AX register
+            SUB AX BX
+            PUSH_SP AX ; push param AX value to top of SP (stack of params)
+            ; CALL End arguments
+            CALL @sum
+            POP_SRET AX
+            MOV BX AX
+            POP_SR AX ; pop top of SR (stack of registers) value to AX register
+            ADD AX BX
+            PUSH_SRET AX
+            RET
+            JMP ENDIF1 ; jump to endif (unconditional)
+    ENDIF1:
+    ; - - - - ENDIF - - - -
+    RET

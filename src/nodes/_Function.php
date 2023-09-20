@@ -5,6 +5,7 @@ namespace LeandroDaher\RinhaDeCompilerPhp\Nodes;
 use LeandroDaher\RinhaDeCompilerPhp\Nodes\Term;
 use LeandroDaher\RinhaDeCompilerPhp\Nodes\Parameter;
 use LeandroDaher\RinhaDeCompilerPhp\Nodes\Location;
+use LeandroDaher\RinhaDeCompilerPhp\GenericStack;
 
 // prefix _ because Function is reserved
 class _Function implements Term
@@ -13,9 +14,9 @@ class _Function implements Term
 
     /**
      * List of Parameter
-     * @var GenericList<Parameter>
+     * @var Parameter[]
      */
-    public GenericList $parameters;
+    public GenericStack $parameters;
 
 
     public Term $value;
@@ -23,7 +24,7 @@ class _Function implements Term
 
     public function __construct(
         ?string $kind,
-        ?GenericList $parameters,
+        ?GenericStack $parameters,
         ?Term $value,
         ?Location $location
     ) {
@@ -32,6 +33,6 @@ class _Function implements Term
         $this->location = $location ?? Location::create();
 
         $parametersTemp = $parameters ?? [];
-        $this->parameters = new GenericList(Parameter::class, $parametersTemp);
+        $this->parameters = new GenericStack(Parameter::class, $parametersTemp);
     }
 }
