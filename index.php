@@ -39,6 +39,7 @@ echo "Bytecode Interpreter $file\n\n";
 
 $vm = new LDHRVirtualMachine($bytecode);
 // $vm->printBytecode();
-$vm->interpret();
+$delay = 1;
+$vm->interpret($delay);
 
 echo "\nEND Bytecode Interpreter\n\n";

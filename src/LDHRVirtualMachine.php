@@ -308,8 +308,14 @@ class LDHRVirtualMachine
         return $this->compareState[$operator] ? 1 : 0;
     }
 
-    public function interpret()
+    public function interpret(int $delay = 0)
     {
+        $startTime = 0;
+        $elapsedTime = 0;
+        if ($delay > 0) {
+            $elapsedTime = $delay+1;
+        }
+
         $head = 0; // index of line
         $retIndex = -1; // index of return for line after CALL, if retIndex < 0 => exit
         $returning = false; // if retindex is used this value is equal true
@@ -317,6 +323,10 @@ class LDHRVirtualMachine
         $exit = false;
 
         while ($head < count($this->bytecode) && !$exit) {
+            if ($delay > 0) {
+                $startTime = microtime(true);
+            }
+
             $jumping = false;
 
             $line = $this->bytecode[$head];
@@ -486,6 +496,14 @@ class LDHRVirtualMachine
             if (!$jumping) {
                 $head++; // next
             }
+
+            if ($delay > 0) {
+                $elapsedTime = microtime(true) - $startTime;
+                while ($elapsedTime < $delay) {
+                    $elapsedTime = microtime(true) - $startTime;
+                }
+            }
+
         }
 
         echo "\nEnd Of File\n";
