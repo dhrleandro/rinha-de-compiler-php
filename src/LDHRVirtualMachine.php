@@ -308,7 +308,7 @@ class LDHRVirtualMachine
         return $this->compareState[$operator] ? 1 : 0;
     }
 
-    public function interpret(int $delay = 0)
+    public function interpret(float $delay = 0, bool $debug = false)
     {
         $startTime = 0;
         $elapsedTime = 0;
@@ -332,9 +332,6 @@ class LDHRVirtualMachine
             $line = $this->bytecode[$head];
             $opcode = $line[0];
 
-            // debug
-            echo "[$head] " . implode(' ', $line) . "\n";
-
             if ($this->isLabel($opcode)) {
                 $opcode = 'LABEL';
             }
@@ -342,6 +339,7 @@ class LDHRVirtualMachine
             switch ($opcode) {
 
                 case OpCode::RET:
+                    unset($this->scopes[$this->scopeIndex]);
                     $this->scopeIndex--;
                     if ($retIndex < 0) {
                         $exit = true;
@@ -428,7 +426,16 @@ class LDHRVirtualMachine
                     $param2 = $line[2];
 
                     $this->checkIsRegisterOrVariable($param1);
-                    $result = $this->getValue($param2) - $this->getValue($param1);
+                    $result = $this->getValue($param1) - $this->getValue($param2);
+                    $this->setValue($result, $param1);
+                    break;
+
+                case OpCode::ADD:
+                    $param1 = $line[1];
+                    $param2 = $line[2];
+
+                    $this->checkIsRegisterOrVariable($param1);
+                    $result = $this->getValue($param1) + $this->getValue($param2);
                     $this->setValue($result, $param1);
                     break;
 
@@ -485,6 +492,12 @@ class LDHRVirtualMachine
 
                     throw new \Exception("$opcode Unexpected Error", 1);
                     break;
+            }
+
+            // debug
+            if ($debug) {
+                echo "[$head] " . implode(' ', $line) . " | $this->scopeIndex | AX: ".$this->registerState['AX']." | BX: ".$this->registerState['BX']."\n";
+                var_dump($this->scopes);
             }
 
             if ($returning) {
