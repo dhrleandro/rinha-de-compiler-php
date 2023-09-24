@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use LeandroDaher\RinhaDeCompilerPhp\Compiler;
 use LeandroDaher\RinhaDeCompilerPhp\TreeWalkInterpreter;
-use LeandroDaher\RinhaDeCompilerPhp\LDHRVirtualMachine;
+use LeandroDaher\RinhaDeCompilerPhp\VirtualMachine;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$file = 'sum.json';
+$file = 'fib.json';
 $astJsonFile = file_get_contents(__DIR__.'/files/'.$file);
 
 echo "Rinha de Compiler PHP\n\n";
@@ -32,10 +32,10 @@ echo "- - - - - - - - - - - - - - - -\n\n";
 
 echo "Bytecode Interpreter $file\n\n";
 
-$vm = new LDHRVirtualMachine($bytecode);
+$vm = new VirtualMachine($bytecode);
 // $vm->printBytecode();
-$delay = 0;//0.1;
-$debug = false;//true;
+$delay = 0;
+$debug = false;
 $vm->interpret($delay, $debug);
 
 echo "\nEND Bytecode Interpreter\n\n";

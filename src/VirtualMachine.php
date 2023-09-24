@@ -70,8 +70,7 @@ class OpCode
     }
 }
 
-// LDHRVM
-class LDHRVirtualMachine
+class VirtualMachine
 {
     private array $bytecode;
 
