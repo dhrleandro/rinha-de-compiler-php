@@ -24,12 +24,8 @@ class OpCode
     const DEF = 'DEF';
     const MOV = 'MOV';
 
-    const PUSH_SR = 'PUSH_SR'; // push stack register
-    const POP_SR = 'POP_SR'; // pop stack register
-    const PUSH_SP = 'PUSH_SP'; // push stack param
-    const POP_SP = 'POP_SP'; // pop stack param
-    const PUSH_SRET = 'PUSH_SRET'; // push stack return
-    const POP_SRET = 'POP_SRET'; // pop stack return
+    const PUSH = 'PUSH'; // push stack register
+    const POP = 'POP'; // pop stack register
 
     const JMP = 'JMP'; // jump to address
     const JT = 'JT'; // jump to addres if true
@@ -95,17 +91,7 @@ class LDHRVirtualMachine
     /**
      * @var GenericStack<int>
      */
-    private GenericStack $registerStack;
-
-    /**
-     * @var GenericStack<int>
-     */
-    private GenericStack $paramStack;
-
-    /**
-     * @var GenericStack<int>
-     */
-    private GenericStack $returnStack;
+    private GenericStack $stack;
 
     private $registerState = [
         Register::AX => 0,
@@ -169,9 +155,7 @@ class LDHRVirtualMachine
         $this->scopes = [];
         $this->scopes[$this->scopeIndex] = [];
 
-        $this->registerStack = new GenericStack('integer');
-        $this->paramStack = new GenericStack('integer');
-        $this->returnStack = new GenericStack('integer');
+        $this->stack = new GenericStack('integer');
     }
 
     public function isLabel(string $str)
@@ -253,9 +237,8 @@ class LDHRVirtualMachine
             $value = $this->registerState[$identifier];
         } elseif (isset($this->scopes[$this->scopeIndex][$identifier])) {
            $value = $this->scopes[$this->scopeIndex][$identifier];
-           /*if (isset($this->labels[$value])) {
-            $value = $this->labels[$value];
-           }*/
+        } elseif (isset($this->scopes[0][$identifier])) { // global
+            $value = $this->scopes[0][$identifier];
         } else {
             throw new \Exception("Unexpected Error", 1);
         }
@@ -268,18 +251,8 @@ class LDHRVirtualMachine
         $value = null;
         if (isset($this->labels[$identifier])) {
             $value = $this->labels[$identifier];
-        } elseif (isset($this->scopes[$this->scopeIndex][$identifier])) {
-            $label = $this->scopes[$this->scopeIndex][$identifier];
-            if (isset($this->labels[$label])) {
-                $value = $this->labels[$label];
-            }
-        } elseif (isset($this->scopes[0][$identifier])) {
-            $label = $this->scopes[0][$identifier];
-            if (isset($this->labels[$label])) {
-                $value = $this->labels[$label];
-            }
         } else {
-            throw new \Exception("Unexpected Error", 1);
+            throw new \Exception("Undefined array key '$identifier'", 1);
         }
 
         return $value;
@@ -303,7 +276,7 @@ class LDHRVirtualMachine
     public function getCompareState(string $operator): int
     {
         if (!isset($this->compareState[$operator]))
-            throw new Exception("Error Request", 1);
+            throw new \Exception("Error Request", 1);
 
         return $this->compareState[$operator] ? 1 : 0;
     }
@@ -317,7 +290,8 @@ class LDHRVirtualMachine
         }
 
         $head = 0; // index of line
-        $retIndex = -1; // index of return for line after CALL, if retIndex < 0 => exit
+        // $retIndex = -1; // index of return for line after CALL, if retIndex < 0 => exit
+        $retHeadIndexStack = new GenericStack(\integer::class);
         $returning = false; // if retindex is used this value is equal true
         $jumping = false;
         $exit = false;
@@ -341,7 +315,7 @@ class LDHRVirtualMachine
                 case OpCode::RET:
                     unset($this->scopes[$this->scopeIndex]);
                     $this->scopeIndex--;
-                    if ($retIndex < 0) {
+                    if (count($retHeadIndexStack->getList()) < 1) {//if ($retIndex < 0) {
                         $exit = true;
                     } else {
                         $returning = true;
@@ -364,40 +338,20 @@ class LDHRVirtualMachine
                     $this->setValue($param2, $param1);
                     break;
 
-                case OpCode::PUSH_SR:
+                case OpCode::PUSH:
                     $param1 = $line[1];
-                    $this->pushStack($this->registerStack, $param1);
+                    $this->pushStack($this->stack, $param1);
                     break;
 
-                case OpCode::POP_SR:
+                case OpCode::POP:
                     $param1 = $line[1];
-                    $this->popStack($this->registerStack, $param1);
-                    break;
-
-                case OpCode::PUSH_SP:
-                    $param1 = $line[1];
-                    $this->pushStack($this->paramStack, $param1);
-                    break;
-
-                case OpCode::POP_SP:
-                    $param1 = $line[1];
-                    $this->popStack($this->paramStack, $param1);
-                    break;
-
-                case OpCode::PUSH_SRET:
-                    $param1 = $line[1];
-                    $this->pushStack($this->returnStack, $param1);
-                    break;
-
-                case OpCode::POP_SRET:
-                    $param1 = $line[1];
-                    $this->popStack($this->returnStack, $param1);
+                    $this->popStack($this->stack, $param1);
                     break;
 
                 case OpCode::CALL:
                     $this->scopeIndex++;
                     $param1 = $line[1];
-                    $retIndex = $head;
+                    $retHeadIndexStack->push($head);
                     $head = $this->getLableIndex($param1);
                     break;
 
@@ -471,20 +425,20 @@ class LDHRVirtualMachine
                 case OpCode::PRINT:
                     $param1 = $line[1];
                     $this->checkIsRegisterOrVariable($param1);
-                    echo "PRINT: ".$this->getValue($param1)."\n";
+                    echo "- - PRINT: ".$this->getValue($param1)." - -\n";
                     break;
 
                 case 'LABEL':
-                    echo "__label__\n";
+                    // echo "__label__\n";
                     break;
 
                 default:
                     var_dump($line);
 
                     var_dump($this->registerState);
-                    var_dump($this->registerStack->getList());
-                    var_dump($this->paramStack->getList());
-                    var_dump($this->returnStack->getList());
+                    var_dump($this->stack->getList());
+                    var_dump($this->stack->getList());
+                    var_dump($this->stack->getList());
                     var_dump("Scope index: ".$this->scopeIndex);
                     var_dump("Scopes: ");
                     var_dump($this->scopes);
@@ -501,12 +455,14 @@ class LDHRVirtualMachine
             }
 
             if ($returning) {
-                $head = $retIndex; // head return to call
-                $retIndex = -1;
+                $returnIndex = $retHeadIndexStack->pop();
+                if ($returnIndex) {
+                    $head = $returnIndex; // head return to call
+                }
+                // $retIndex = -1;
+                $head++; // next
                 $returning = false;
-            }
-
-            if (!$jumping) {
+            } else if (!$jumping) {
                 $head++; // next
             }
 
