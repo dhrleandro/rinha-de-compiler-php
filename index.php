@@ -8,7 +8,7 @@ use LeandroDaher\RinhaDeCompilerPhp\VirtualMachine;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$file = 'fib.json';
+$file = 'combination.json';
 $astJsonFile = file_get_contents(__DIR__.'/files/'.$file);
 
 echo "Rinha de Compiler PHP\n\n";
@@ -33,10 +33,10 @@ echo "- - - - - - - - - - - - - - - -\n\n";
 echo "Bytecode Interpreter $file\n\n";
 
 $vm = new VirtualMachine($bytecode);
-// $vm->printBytecode();
+// $vm->printBytecode(false);exit;
 $delay = 0;
-$debug = false;
-$vm->interpret($delay, $debug);
+$debug = true;
+$vm->start($delay, $debug);
 
 echo "\nEND Bytecode Interpreter\n\n";
 

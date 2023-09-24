@@ -174,6 +174,11 @@ class VirtualMachine
         } else {
             throw new \Exception("Unexpected Error", 1);
         }
+
+        if (is_null($value)) {
+            //$value = 0;
+        }
+
         $stack->push($value);
     }
 
@@ -436,8 +441,6 @@ class VirtualMachine
 
                     var_dump($this->registerState);
                     var_dump($this->stack->getList());
-                    var_dump($this->stack->getList());
-                    var_dump($this->stack->getList());
                     var_dump("Scope index: ".$this->scopeIndex);
                     var_dump("Scopes: ");
                     var_dump($this->scopes);
@@ -451,6 +454,7 @@ class VirtualMachine
             if ($debug) {
                 echo "[$head] " . implode(' ', $line) . " | $this->scopeIndex | AX: ".$this->registerState['AX']." | BX: ".$this->registerState['BX']."\n";
                 var_dump($this->scopes);
+                var_dump($retHeadIndexStack);
             }
 
             if ($returning) {
@@ -477,11 +481,26 @@ class VirtualMachine
         echo "\nEnd Of File\n";
     }
 
-    function printBytecode()
+    function printBytecode($showLineIndex = true)
     {
         foreach ($this->bytecode as $key => $line) {
-            echo "[$key] ".implode(' ', $line)."\n";
+            $lineIndex = $showLineIndex ? "[$key] " : '';
+            echo $lineIndex.implode(' ', $line)."\n";
         }
         echo "\n\n";
+    }
+
+    public function start(float $delay = 0, bool $debug = false)
+    {
+        try {
+            $this->interpret($delay, $debug);
+        } catch (\Throwable $e) {
+            echo "- - - - ERROR - - - -\n";
+            var_export($this->stack->getList());
+            var_export($this->compareState);
+            echo $e->getMessage()."\n\n";
+            var_export($e->getTrace());
+        }
+
     }
 }
