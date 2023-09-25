@@ -434,7 +434,7 @@ class VirtualMachine
                 case OpCode::PRINT:
                     $param1 = $line[1];
                     $this->checkIsRegisterOrVariable($param1);
-                    echo "- - PRINT: ".$this->getValue($param1)." - -\n";
+                    echo "PRINT => ".$this->getValue($param1)."\n";
                     break;
 
                 case 'LABEL':
