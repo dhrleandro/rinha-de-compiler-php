@@ -15,9 +15,10 @@ require_once __DIR__ . '/vendor/autoload.php';
 // $file = 'sum.json';
 $file = 'fib.json';
 // $file = 'combination.json';
-// $file = 'teste.json';
+// $file = 'print.json';
+// $file = 'test.json';
 
-$astJsonFile = file_get_contents(__DIR__.'/var/files/'.$file);
+$astJsonFile = file_get_contents(__DIR__.'/var/rinha/files/'.$file);
 
 echo "Rinha de Compiler PHP\n\n";
 

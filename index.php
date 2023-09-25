@@ -19,7 +19,7 @@ $docker = is_file("/.dockerenv");
 if ($docker) {
     $file = '/var/rinha/source.rinha.json';
 } else {
-    $file = './var/rinha/source.rinha.json';
+    $file = __DIR__.'/var/rinha/source.rinha.json';
 }
 
 $astJsonFile = file_get_contents($file);
