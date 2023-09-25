@@ -22,6 +22,13 @@ $astJsonFile = file_get_contents(__DIR__.'/var/rinha/files/'.$file);
 
 echo "Rinha de Compiler PHP\n\n";
 
+echo "Tree-Walk Interpreter $file\n\n";
+$interpreter = new TreeWalkInterpreter($astJsonFile);
+echo "Resultado: ".$interpreter->start();
+echo "\nFIM\n\n";
+
+echo "- - - - - - - - - - - - - - - -\n\n";
+
 echo "Compiling $file\n\n";
 $compiler = new Compiler($astJsonFile);
 $bytecode = $compiler->start();
@@ -31,19 +38,11 @@ echo "\nEND Bytecode Compiler\n\n";
 echo "- - - - - - - - - - - - - - - -\n\n";
 
 
-echo "Tree-Walk Interpreter $file\n\n";
-$interpreter = new TreeWalkInterpreter($astJsonFile);
-echo "Resultado: ".$interpreter->start();
-echo "\nFIM\n\n";
-
-echo "- - - - - - - - - - - - - - - -\n\n";
-
-
 echo "Bytecode Interpreter $file\n\n";
 
 $vm = new VirtualMachine($bytecode);
 // $vm->printBytecode(false);exit;
-// $vm->printBytecode(true);exit;
+// $vm->printBytecode(true);// exit;
 $delay = 0;
 $debug = false;
 $vm->start($delay, $debug);

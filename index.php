@@ -59,7 +59,6 @@ echo "Compiling....";
 $compiler = new Compiler($astJsonFile);
 $bytecode = $compiler->start();
 echo " Ok!\n\n";
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n";
 
 $vm = new VirtualMachine($bytecode);
 $delay = 0;

@@ -118,7 +118,8 @@ class VirtualMachine
 
         // clean bytecode
         foreach ($lines as $line) {
-            $line = trim(strtoupper($line));
+            // $line = trim(strtoupper($line));
+            $line = trim($line);
 
             $explode = [];
             $params = [];
@@ -230,6 +231,14 @@ class VirtualMachine
             } elseif (isset($this->scopes[$this->scopeIndex][$destiny])) {
                 $this->scopes[$this->scopeIndex][$destiny] = intval($origin);
             }
+        } elseif (is_string($origin)) {
+            $strValue = str_replace('\S', ' ', $origin);
+            $strValue = str_replace('"', ' ', $strValue);
+            if (Register::isRegister($destiny)) {
+                $this->registerState[$destiny] = $strValue;
+            } elseif (isset($this->scopes[$this->scopeIndex][$destiny])) {
+                $this->scopes[$this->scopeIndex][$destiny] = $strValue;
+            }
         } else {
             throw new \Exception("Unexpected Error", 1);
         }
@@ -246,6 +255,9 @@ class VirtualMachine
         } else {
             throw new \Exception("Unexpected Error", 1);
         }
+
+        if (is_string($value))
+            return $value;
 
         return intval($value);
     }

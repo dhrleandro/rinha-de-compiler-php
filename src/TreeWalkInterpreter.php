@@ -23,6 +23,7 @@ class TreeWalkInterpreter
                 }
                 return $this->interpret($callee->value, $newEnvironment);
             case 'Int':
+            case 'Str':
                 return $node->value;
             case 'Binary':
                 $lhs = $this->interpret($node->lhs, $environment);
@@ -40,12 +41,18 @@ class TreeWalkInterpreter
                             throw new Exception('Division by zero');
                         }
                         return $lhs / $rhs;
-                    case 'Lt':
-                        return $lhs < $rhs;
-                    case 'Gte':
-                        return $lhs >= $rhs;
                     case 'Eq':
                         return $lhs == $rhs;
+                    case 'Neq':
+                        return $lhs != $rhs;
+                    case 'Lt':
+                        return $lhs < $rhs;
+                    case 'Gt':
+                        return $lhs > $rhs;
+                    case 'Lte':
+                        return $lhs <= $rhs;
+                    case 'Gte':
+                        return $lhs >= $rhs;
                     case 'And':
                         return $lhs && $rhs;
                     case 'Or':
@@ -60,16 +67,11 @@ class TreeWalkInterpreter
                 $environmentCopy = [...$environment];
                 $environmentCopy[$node->name->text] = $value;
                 return $this->interpret($node->next, $environmentCopy);
-            case 'Str':
-                return $node->value;
             case 'Print':
                 $term = $this->interpret($node->value, $environment);
                 switch (gettype($term)) {
                     case 'integer':
-                        //echo $term;
-                        return $term;
                     case 'string':
-                        //echo $term;
                         return $term;
                 }
             case 'Var':

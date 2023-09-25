@@ -169,7 +169,11 @@ class Compiler
                 }*/
                 return $output;
                 break;
-
+            case 'Str':
+                $strValue = '"'.str_replace(' ', '\S', $node->value).'"';
+                $this->emmit($output, "MOV AX $strValue");
+                return $output;
+                break;
             case 'Var':
                 if (isset($this->variables[$node->text]) && $this->variables[$node->text] === 'FUNCTION') {
                     if ($this->variables[$node->text] === 'FUNCTION') {
