@@ -12,40 +12,68 @@ use LeandroDaher\RinhaDeCompilerPhp\VirtualMachine;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-// $file = 'sum.json';
-$file = 'fib.json';
-// $file = 'combination.json';
-// $file = 'print.json';
-// $file = 'test.json';
+// $fileName = 'sum.json';
+$fileName = 'fib.json';
+// $fileName = 'combination.json';
+// $fileName = 'print.json';
+// $fileName = 'test.json';
 
-$astJsonFile = file_get_contents(__DIR__.'/var/rinha/files/'.$file);
+$file = __DIR__.'/var/rinha/files/'.$fileName;
+$astJsonFile = file_get_contents($file);
+
+if (!$astJsonFile) {
+    echo "No such file $file\n";
+    exit;
+}
 
 echo "Rinha de Compiler PHP\n\n";
 
-echo "Tree-Walk Interpreter $file\n\n";
+echo "Este programa interpretará uma AST da linguagem Rinha de duas maneiras:\n";
+echo "1 - Tree-walker Interpreter: interpreta a AST diretamente na memória\n";
+echo "2 - Bytecode Interpreter: compila a AST em Bytecode e interpreta o bytecode diretamente na memória através de uma simples VM\n\n";
+echo "Os dois métodos serão executados em sequência e deverão apresentar o mesmo resultado.\n";
+echo "\n\n";
+
+
+echo "= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n";
+echo "Método 1: Tree-Walk Interpreter\n";
+echo "Arquivo: $file\n";
+echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n";
+
 $interpreter = new TreeWalkInterpreter($astJsonFile);
-echo "Resultado: ".$interpreter->start();
-echo "\nFIM\n\n";
+echo "RRESULTADO: \n";
+echo $interpreter->start();
+echo "\n\n";
+echo "= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n\n\n\n";
 
-echo "- - - - - - - - - - - - - - - -\n\n";
 
-echo "Compiling $file\n\n";
+echo "= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n";
+echo "Método 2: Bytecode Interpreter\n";
+echo "Arquivo: $file\n";
+echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n";
+
+echo "Compiling....";
 $compiler = new Compiler($astJsonFile);
 $bytecode = $compiler->start();
-// echo $bytecode;
-echo "\nEND Bytecode Compiler\n\n";
-
-echo "- - - - - - - - - - - - - - - -\n\n";
-
-
-echo "Bytecode Interpreter $file\n\n";
+echo " Ok!\n\n";
 
 $vm = new VirtualMachine($bytecode);
-// $vm->printBytecode(false);exit;
-// $vm->printBytecode(true);// exit;
 $delay = 0;
 $debug = false;
+
+echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n";
+echo "Inline Bytecode ( \"|\" significa \"\\n\"):\n";
+echo "\n";
+echo $vm->printInlineBytecode();
+echo "\n\n";
+echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n";
+
+echo "Bytecode Interpreter\n\n";
+
+echo "RESULTADO:\n";
 $vm->start($delay, $debug);
 
-echo "\nEND Bytecode Interpreter\n\n";
+echo "\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n";
 
+echo "END Bytecode Interpreter\n\n";
+echo "= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n\n";

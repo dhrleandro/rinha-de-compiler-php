@@ -497,7 +497,9 @@ class VirtualMachine
 
         }
 
-        echo "\nEnd Of File\n";
+        if ($debug) {
+            echo "\nEnd Of File\n";
+        }
     }
 
     function getBytecode(): array
