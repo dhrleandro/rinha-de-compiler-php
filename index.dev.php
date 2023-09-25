@@ -17,7 +17,7 @@ $file = 'fib.json';
 // $file = 'combination.json';
 // $file = 'teste.json';
 
-$astJsonFile = file_get_contents(__DIR__.'/files/'.$file);
+$astJsonFile = file_get_contents(__DIR__.'/var/files/'.$file);
 
 echo "Rinha de Compiler PHP\n\n";
 

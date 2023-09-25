@@ -488,6 +488,11 @@ class VirtualMachine
         echo "\nEnd Of File\n";
     }
 
+    function getBytecode(): array
+    {
+        return $this->bytecode;
+    }
+
     function printBytecode($showLineIndex = true)
     {
         foreach ($this->bytecode as $key => $line) {
@@ -495,6 +500,15 @@ class VirtualMachine
             echo $lineIndex.implode(' ', $line)."\n";
         }
         echo "\n\n";
+    }
+
+    function printInlineBytecode()
+    {
+        $bytecodeLines = [];
+        foreach ($this->bytecode as $key => $line) {
+            $bytecodeLines[] = implode(' ', $line);
+        }
+        echo implode(' | ', $bytecodeLines);
     }
 
     public function start(float $delay = 0, bool $debug = false)

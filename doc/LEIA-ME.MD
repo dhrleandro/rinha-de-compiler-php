@@ -4,7 +4,16 @@
 
 Interpretador implementado em PHP para a Rinha de Compiler
 
-https://github.com/aripiprazole/rinha-de-compiler/tree/main
+https://github.com/aripiprazole/rinha-de-compiler
+
+## INTRODUÇÃO
+
+Este programa interpretará uma AST da linguagem Rinha de duas maneiras:
+
+1. Tree-walker Interpreter: interpreta a AST diretamente na memória
+2. Bytecode Interpreter: compila a AST em Bytecode e interpreta o bytecode diretamente na memória através de uma simples VM
+
+Os dois métodos serão executados em sequência e deverão apresentar o mesmo resultado.
 
 ## EXPERTIMENTS
 

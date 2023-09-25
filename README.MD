@@ -4,7 +4,16 @@
 
 Interpreter implemented in PHP for the Compiler Battle
 
-https://github.com/aripiprazole/rinha-de-compiler/tree/main
+https://github.com/aripiprazole/rinha-de-compiler
+
+## INTRODUCTION
+
+This program will interpret a Rinha language AST in two ways:
+
+1. Tree-walker Interpreter: interprets the AST directly in memory
+2. Bytecode Interpreter: compiles the AST into Bytecode and interprets the bytecode directly in memory through a simple VM
+
+The two methods will be executed in sequence and should give the same result.
 
 ## EXPERTIMENTS
 
@@ -22,7 +31,7 @@ git clone git@github.com:dhrleandro/rinha-de-compiler-php.git
 **Docker command**
 ```sh
 docker build -t rinha-de-compiler-php .
-docker run -it --memory="2g" --memory-swap="0" --cpus="2" rinha-de-compiler-php
+docker run -v ./source.rinha.json:/var/rinha/source.rinha.json --memory=2gb --cpus=2 rinha-de-compiler-php
 ```
 
 or
