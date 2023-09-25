@@ -314,6 +314,11 @@ class VirtualMachine
                 $opcode = 'LABEL';
             }
 
+            // debug
+            if ($debug) {
+                $debugHead = "[$head] " . implode(' ', $line) . " | SCOPE: $this->scopeIndex\n";
+            }
+
             switch ($opcode) {
 
                 case OpCode::RET:
@@ -452,9 +457,11 @@ class VirtualMachine
 
             // debug
             if ($debug) {
-                echo "[$head] " . implode(' ', $line) . " | $this->scopeIndex | AX: ".$this->registerState['AX']." | BX: ".$this->registerState['BX']."\n";
-                var_dump($this->scopes);
-                var_dump($retHeadIndexStack);
+                echo $debugHead;
+                echo "REGs: AX: ".$this->registerState['AX']." | BX: ".$this->registerState['BX'];
+                echo ' STACK: ['.implode(', ', $this->stack->getList())."]\n";
+                echo 'RET STACK: ['.implode(', ', $retHeadIndexStack->getList())."]\n";
+                echo "\n";
             }
 
             if ($returning) {

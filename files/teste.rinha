@@ -1,0 +1,10 @@
+let sum = fn (a,b) => {
+    let r = a+b;
+    if (r >= 10) {
+        1
+    } else {
+        sum(a+1, b+1) + sum(a+1, b+1)
+    }
+};
+
+print(sum(4, 4))

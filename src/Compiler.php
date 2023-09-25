@@ -47,11 +47,11 @@ class Compiler
 
                     $this->emmit($output, 'DEF '.$ident);
                     $this->variables[$ident] = 'VARIABLE';
-                    $this->emmit($output, $this->compile($node->value));
+                    $this->emmit($output, $this->compile($node->value, $lastNode));
                     $this->emmit($output, "MOV $ident AX");
                 }
 
-                $this->emmit($output, $this->compile($node->next));
+                $this->emmit($output, $this->compile($node->next, $lastNode));
                 return $output;
                 break;
 
@@ -68,6 +68,7 @@ class Compiler
                 }
 
                 $this->emmit($output, $this->compile($node->value, $node));
+                $this->emmit($output, "PUSH AX");
                 $this->emmit($output, "RET");
                 return $output;
                 break;
@@ -79,7 +80,7 @@ class Compiler
                 $this->emmit($output, '.if'.$this->ifIndex.':');
 
                 // CONDITION:
-                $this->emmit($output, $this->compile($node->condition));
+                $this->emmit($output, $this->compile($node->condition, $lastNode));
                 $this->emmit($output, "JT AX .then$this->ifIndex ; jump to then if AX is 1 (true)");
                 $this->emmit($output, "JF AX .otherwise$this->ifIndex ; jump to otherwise if AX is 0 (false)");
 
@@ -102,9 +103,9 @@ class Compiler
                 break;
 
             case 'Binary':
-                $this->emmit($output, $this->compile($node->lhs));
+                $this->emmit($output, $this->compile($node->lhs, $lastNode));
                 $this->emmit($output, "PUSH AX ; push AX value to top of SR (stack of registers)");
-                $this->emmit($output, $this->compile($node->rhs));
+                $this->emmit($output, $this->compile($node->rhs, $lastNode));
                 $this->emmit($output, "MOV BX AX");
                 $this->emmit($output, "POP AX ; pop top of SR (stack of registers) value to AX register");
 
@@ -152,20 +153,20 @@ class Compiler
                         throw new \Exception("Unknown operator $node->op");
                 }
 
-                if (!is_null($lastNode) && $lastNode->kind == 'Function') {
+                /*if (!is_null($lastNode) && $lastNode->kind == 'Function') {
                     $this->emmit($output, "PUSH AX");
                     $this->emmit($output, "RET");
-                }
+                }*/
 
                 return $output;
                 break;
 
             case 'Int':
                 $this->emmit($output, "MOV AX $node->value");
-                if (!is_null($lastNode) && $lastNode->kind == 'Function') {
+                /*if (!is_null($lastNode) && $lastNode->kind == 'Function') {
                     $this->emmit($output, "PUSH AX");
                     $this->emmit($output, "RET");
-                }
+                }*/
                 return $output;
                 break;
 
@@ -176,10 +177,10 @@ class Compiler
                     }
                 } else {
                     $this->emmit($output, "MOV AX $node->text");
-                    if (!is_null($lastNode) && $lastNode->kind == 'Function') {
+                    /*if (!is_null($lastNode) && $lastNode->kind == 'Function') {
                         $this->emmit($output, "PUSH AX");
                         $this->emmit($output, "RET");
-                    }
+                    }*/
                 }
 
                 return $output;
@@ -190,13 +191,13 @@ class Compiler
                 $invertedArguments = array_reverse($node->arguments, true);
                 foreach ($invertedArguments as $key => $argument) {
                     $index = $key+1;
-                    $argumentAsm = $this->compile($argument);
+                    $argumentAsm = $this->compile($argument, $lastNode);
                     $this->emmit($output, "; argument $index");
                     $this->emmit($output, $argumentAsm);
                     $this->emmit($output, "PUSH AX ; push param AX value to top of SP (stack of params)");
                 }
                 $this->emmit($output, "; CALL End arguments");
-                $callee = implode(' ', $this->compile($node->callee));
+                $callee = implode(' ', $this->compile($node->callee, $lastNode));
                 $this->emmit($output, "CALL ".$callee);
                 $this->emmit($output, "POP AX");
 
@@ -204,7 +205,7 @@ class Compiler
                 break;
 
             case 'Print':
-                $this->emmit($output, $this->compile($node->value));
+                $this->emmit($output, $this->compile($node->value, $lastNode));
                 $this->emmit($output, "PRINT AX");
                 return $output;
                 break;

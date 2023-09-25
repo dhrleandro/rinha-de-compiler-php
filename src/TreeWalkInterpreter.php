@@ -42,6 +42,8 @@ class TreeWalkInterpreter
                         return $lhs / $rhs;
                     case 'Lt':
                         return $lhs < $rhs;
+                    case 'Gte':
+                        return $lhs >= $rhs;
                     case 'Eq':
                         return $lhs == $rhs;
                     case 'And':
