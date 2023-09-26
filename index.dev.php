@@ -21,7 +21,12 @@ require_once __DIR__ . '/vendor/autoload.php';
 // $fileName = 'tuple_let.json';
 // $fileName = 'tuple.json';
 // $fileName = 'tuple2.json';
-$fileName = 'tuple3.json';
+// $fileName = 'tuple3.json';
+
+// OS TESTES ABAIXO NÃO FUNCIONAM E ESTÃO PENDENTES, SEM TEMPO PARA TEMINAR NO PRAZO POIS PRECISAREI VIAJAR HOJE
+// $fileName = 'string_concat.json';
+// $fileName = 'boolean.json';
+// $fileName = 'function_parameter.json';
 
 $file = __DIR__.'/var/rinha/files/'.$fileName;
 $astJsonFile = file_get_contents($file);
