@@ -1,0 +1,7 @@
+let sum_tuple = fn (a, b, c, d) => {
+  let tuple_a = (a, b);
+  let tuple_b = (c, d);
+  (first(tuple_a) + first(tuple_b), second(tuple_a)+second(tuple_b))
+};
+
+print(sum_tuple(1,2,3,4))

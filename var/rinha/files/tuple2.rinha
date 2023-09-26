@@ -1,0 +1,2 @@
+let a = second((30, 85));
+print(a)
