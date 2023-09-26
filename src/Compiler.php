@@ -8,6 +8,7 @@ class Compiler
     private $variables;
     private $functionIndex;
     private $ifIndex;
+    private $tupleIndex;
     private $functions;
 
     public function __construct($astJsonFile)
@@ -179,11 +180,22 @@ class Compiler
                 }*/
                 return $output;
                 break;
+
             case 'Str':
                 $strValue = '"'.str_replace(' ', '\S', $node->value).'"';
                 $this->emmit($output, "MOV AX $strValue");
                 return $output;
                 break;
+
+            case 'Tuple':
+                $this->emmit($output, $this->compile($node->second, $lastNode));
+                $this->emmit($output, "PUSH AX");
+                $this->emmit($output, $this->compile($node->first, $lastNode));
+                $this->emmit($output, "POP BX");
+                $this->emmit($output, "TUPLE AX BX"); // store AX and BX in AX like array($AX, $BX)
+                return $output;
+                break;
+
             case 'Var':
                 if (isset($this->variables[$node->text]) && $this->variables[$node->text] === 'FUNCTION') {
                     if ($this->variables[$node->text] === 'FUNCTION') {
@@ -221,6 +233,18 @@ class Compiler
             case 'Print':
                 $this->emmit($output, $this->compile($node->value, $lastNode));
                 $this->emmit($output, "PRINT AX");
+                return $output;
+                break;
+
+            case 'First':
+                $this->emmit($output, $this->compile($node->value, $lastNode));
+                $this->emmit($output, "FIRST AX");
+                return $output;
+                break;
+
+            case 'Second':
+                $this->emmit($output, $this->compile($node->value, $lastNode));
+                $this->emmit($output, "SECOND AX");
                 return $output;
                 break;
 

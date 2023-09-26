@@ -35,6 +35,10 @@ class OpCode
     const RET = 'RET';
     const PRINT = 'PRINT';
 
+    const TUPLE = 'TUPLE';
+    const FIRST = 'FIRST';
+    const SECOND = 'SECOND';
+
     const CMP = 'CMP'; // compare
 
     const ADD = 'ADD';
@@ -155,7 +159,7 @@ class VirtualMachine
         $this->scopes = [];
         $this->scopes[$this->scopeIndex] = [];
 
-        $this->stack = new GenericStack('integer');
+        $this->stack = new GenericStack('integer', [], true);
     }
 
     public function isLabel(string $str)
@@ -206,8 +210,25 @@ class VirtualMachine
             throw new \Exception("$param is not a register or a variable");
     }
 
-    public function setValue(string $origin, string $destiny): void
+    public function errorIfIsTuple(mixed $param): void
     {
+        if (is_array($param)) {
+            $tuple = implode(', ', $param);
+            throw new \Exception("Tuple ($tuple) cannot be used in binary operations");
+        }
+    }
+
+    public function setValue(string|array $origin, string $destiny): void
+    {
+        if (is_array($origin)) {
+            if (Register::isRegister($destiny)) {
+                $this->registerState[$destiny] = $origin;
+            } elseif (isset($this->scopes[$this->scopeIndex][$destiny])) {
+                $this->scopes[$this->scopeIndex][$destiny] = $origin;
+            }
+            return;
+        }
+
         if (Register::isRegister($origin)) {
 
             if (Register::isRegister($destiny)) {
@@ -260,6 +281,9 @@ class VirtualMachine
         if (is_string($value))
             return $value;
 
+        if (is_array($value))
+            return $value;
+
         return intval($value);
     }
 
@@ -279,6 +303,9 @@ class VirtualMachine
     {
         $left = $this->getValue($left);
         $right = $this->getValue($right);
+
+        $this->errorIfIsTuple($left);
+        $this->errorIfIsTuple($right);
 
         $this->compareState[OpCode::EQ] = $left == $right;
         $this->compareState[OpCode::NEQ] = $left != $right;
@@ -360,6 +387,42 @@ class VirtualMachine
                     $this->setValue($param2, $param1);
                     break;
 
+                case OpCode::TUPLE:
+                    $param1 = $line[1];
+                    $param2 = $line[2];
+
+                    if (!Register::isRegister($param1) || !Register::isRegister($param1)) {
+                        throw new \Exception("$param1 and $param2 must be a Register", 1);
+                    }
+
+                    $tupleValue = array($this->getValue($param1), $this->getValue($param2));
+                    $this->setValue($tupleValue, "AX");
+                    break;
+
+                case OpCode::FIRST:
+                    // get the first element of the tuple and store it in AX
+                    $param1 = $line[1];
+
+                    $tupleValue = $this->getValue($param1);
+                    if (!is_array($tupleValue)) {
+                        throw new \Exception("The FIRST function accepts only one tuple as a parameter", 1);
+                    }
+
+                    $this->setValue($tupleValue[0], "AX");
+                    break;
+
+                case OpCode::SECOND:
+                    // get the first element of the tuple and store it in AX
+                    $param1 = $line[1];
+
+                    $tupleValue = $this->getValue($param1);
+                    if (!is_array($tupleValue)) {
+                        throw new \Exception("The FIRST function accepts only one tuple as a parameter", 1);
+                    }
+
+                    $this->setValue($tupleValue[1], "AX");
+                    break;
+
                 case OpCode::PUSH:
                     $param1 = $line[1];
                     $this->pushStack($this->stack, $param1);
@@ -402,7 +465,13 @@ class VirtualMachine
                     $param2 = $line[2];
 
                     $this->checkIsRegisterOrVariable($param1);
-                    $result = $this->getValue($param1) + $this->getValue($param2);
+
+                    $left = $this->getValue($param1);
+                    $right = $this->getValue($param2);
+                    $this->errorIfIsTuple($left);
+                    $this->errorIfIsTuple($right);
+
+                    $result = $left + $right;
                     $this->setValue($result, $param1);
                     break;
 
@@ -411,7 +480,13 @@ class VirtualMachine
                     $param2 = $line[2];
 
                     $this->checkIsRegisterOrVariable($param1);
-                    $result = $this->getValue($param1) - $this->getValue($param2);
+
+                    $left = $this->getValue($param1);
+                    $right = $this->getValue($param2);
+                    $this->errorIfIsTuple($left);
+                    $this->errorIfIsTuple($right);
+
+                    $result = $left - $right;
                     $this->setValue($result, $param1);
                     break;
 
@@ -420,15 +495,28 @@ class VirtualMachine
                     $param2 = $line[2];
 
                     $this->checkIsRegisterOrVariable($param1);
-                    $result = $this->getValue($param1) * $this->getValue($param2);
+
+                    $left = $this->getValue($param1);
+                    $right = $this->getValue($param2);
+                    $this->errorIfIsTuple($left);
+                    $this->errorIfIsTuple($right);
+
+                    $result = $left * $right;
                     $this->setValue($result, $param1);
                     break;
+
                 case OpCode::DIV:
                     $param1 = $line[1];
                     $param2 = $line[2];
 
                     $this->checkIsRegisterOrVariable($param1);
-                    $result = $this->getValue($param1) / $this->getValue($param2);
+
+                    $left = $this->getValue($param1);
+                    $right = $this->getValue($param2);
+                    $this->errorIfIsTuple($left);
+                    $this->errorIfIsTuple($right);
+
+                    $result = $left / $right;
                     $this->setValue($result, $param1);
                     break;
 
@@ -437,7 +525,13 @@ class VirtualMachine
                     $param2 = $line[2];
 
                     $this->checkIsRegisterOrVariable($param1);
-                    $result = $this->getValue($param1) % $this->getValue($param2);
+
+                    $left = $this->getValue($param1);
+                    $right = $this->getValue($param2);
+                    $this->errorIfIsTuple($left);
+                    $this->errorIfIsTuple($right);
+
+                    $result = $left % $right;
                     $this->setValue($result, $param1);
                     break;
 
@@ -474,7 +568,12 @@ class VirtualMachine
                 case OpCode::PRINT:
                     $param1 = $line[1];
                     $this->checkIsRegisterOrVariable($param1);
-                    echo "PRINT => ".$this->getValue($param1)."\n";
+                    // echo "PRINT => ".$this->getValue($param1)."\n";
+                    $printValue = $this->getValue($param1);
+                    if (is_array($printValue)) {
+                        $printValue = '('.implode(', ', $printValue).')';
+                    }
+                    echo $printValue;
                     break;
 
                 case 'LABEL':
@@ -559,8 +658,10 @@ class VirtualMachine
             $this->interpret($delay, $debug);
         } catch (\Throwable $e) {
             echo "- - - - ERROR - - - -\n";
+            var_export($this->registerState);
             var_export($this->stack->getList());
             var_export($this->compareState);
+            var_export($this->scopes);
             echo $e->getMessage()."\n\n";
             var_export($e->getTrace());
         }

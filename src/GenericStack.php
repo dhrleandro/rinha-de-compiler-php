@@ -6,10 +6,13 @@ namespace LeandroDaher\RinhaDeCompilerPhp;
 
 class GenericStack
 {
+    private bool $igoneTypeVerification;
     private string $allowedClassOrInterface;
     private array $list;
 
-    public function __construct(string $allowedClassOrInterface, array $objects = []) {
+    public function __construct(string $allowedClassOrInterface, array $objects = [], bool $igoneTypeVerification = false) {
+
+        $this->igoneTypeVerification = $igoneTypeVerification;
 
         $this->list = [];
 
@@ -50,6 +53,9 @@ class GenericStack
 
     public function classExists(string $className): bool
     {
+        if ($this->igoneTypeVerification)
+            return true;
+
         return class_exists($className, true)   ||
             interface_exists($className, true)  ||
             in_array($className, ['integer', 'string']);
@@ -57,6 +63,9 @@ class GenericStack
 
     public function allowedClassOrAllowedInterfaceImplementation(mixed $item): bool
     {
+        if ($this->igoneTypeVerification)
+            return true;
+
         try {
             $class = get_class($item);
             $implements = class_implements($item, true);
