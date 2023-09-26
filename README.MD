@@ -36,6 +36,22 @@ docker build -t dhr-rinha-de-compiler-php .
 docker run -v ./source.rinha.json:/var/rinha/source.rinha.json --memory=2gb --cpus=2 dhr-rinha-de-compiler-php
 ```
 
+**Examples:**
+
+Run in the project root folder.
+
+```sh
+docker run -v ./var/rinha/files/combination.json:/var/rinha/source.rinha.json --memory=2gb --cpus=2 dhr-rinha-de-compiler-php
+
+docker run -v ./var/rinha/files/fib.json:/var/rinha/source.rinha.json --memory=2gb --cpus=2 dhr-rinha-de-compiler-php
+
+docker run -v ./var/rinha/files/sum.json:/var/rinha/source.rinha.json --memory=2gb --cpus=2 dhr-rinha-de-compiler-php
+
+docker run -v ./var/rinha/files/print.json:/var/rinha/source.rinha.json --memory=2gb --cpus=2 dhr-rinha-de-compiler-php
+
+docker run -v ./var/rinha/files/test.json:/var/rinha/source.rinha.json --memory=2gb --cpus=2 dhr-rinha-de-compiler-php
+```
+
 or
 
 **Makefile command**
@@ -56,3 +72,23 @@ php index.php
 ## SPECS
 
 https://github.com/aripiprazole/rinha-de-compiler/blob/main/SPECS.md
+
+## TODO
+
+### VM Implementation
+
+Feature                | Checked |
+:----------------------|:-------:|
+Int                    | OK
+Str                    | OK
+Call                   | OK
+Binary                 | OK
+Function               | OK
+Let                    | OK
+If                     | OK
+Print                  | Partially
+First                  | -
+Second                 | -
+Bool                   | -
+Tuple                  | -
+Var                    | OK

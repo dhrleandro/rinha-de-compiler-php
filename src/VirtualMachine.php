@@ -41,7 +41,7 @@ class OpCode
     const SUB = 'SUB';
     const MUL = 'MUL';
     const DIV = 'DIV';
-    // const NEG = 'NEG';
+    const REM = 'REM';
 
     const EQ = 'EQ';
     const NEQ = 'NEQ';
@@ -234,6 +234,7 @@ class VirtualMachine
         } elseif (is_string($origin)) {
             $strValue = str_replace('\S', ' ', $origin);
             $strValue = str_replace('"', ' ', $strValue);
+            $strValue = str_replace('\n', "\n", $strValue);
             if (Register::isRegister($destiny)) {
                 $this->registerState[$destiny] = $strValue;
             } elseif (isset($this->scopes[$this->scopeIndex][$destiny])) {
@@ -396,6 +397,15 @@ class VirtualMachine
                     $this->setValue($this->getCompareState($operator), $param);
                     break;
 
+                case OpCode::ADD:
+                    $param1 = $line[1];
+                    $param2 = $line[2];
+
+                    $this->checkIsRegisterOrVariable($param1);
+                    $result = $this->getValue($param1) + $this->getValue($param2);
+                    $this->setValue($result, $param1);
+                    break;
+
                 case OpCode::SUB:
                     $param1 = $line[1];
                     $param2 = $line[2];
@@ -405,14 +415,32 @@ class VirtualMachine
                     $this->setValue($result, $param1);
                     break;
 
-                case OpCode::ADD:
+                case OpCode::MUL:
                     $param1 = $line[1];
                     $param2 = $line[2];
 
                     $this->checkIsRegisterOrVariable($param1);
-                    $result = $this->getValue($param1) + $this->getValue($param2);
+                    $result = $this->getValue($param1) * $this->getValue($param2);
                     $this->setValue($result, $param1);
                     break;
+                case OpCode::DIV:
+                    $param1 = $line[1];
+                    $param2 = $line[2];
+
+                    $this->checkIsRegisterOrVariable($param1);
+                    $result = $this->getValue($param1) / $this->getValue($param2);
+                    $this->setValue($result, $param1);
+                    break;
+
+                case OpCode::REM:
+                    $param1 = $line[1];
+                    $param2 = $line[2];
+
+                    $this->checkIsRegisterOrVariable($param1);
+                    $result = $this->getValue($param1) % $this->getValue($param2);
+                    $this->setValue($result, $param1);
+                    break;
+
 
                 case OpCode::JMP:
                     $label = $line[1];

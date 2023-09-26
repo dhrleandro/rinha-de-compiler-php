@@ -111,6 +111,22 @@ class Compiler
 
 
                 switch ($node->op) {
+                    case 'Add':
+                        $this->emmit($output, "ADD AX BX");
+                        break;
+                    case 'Sub':
+                        $this->emmit($output, "SUB AX BX");
+                        break;
+                    case 'Mul':
+                        $this->emmit($output, "MUL AX BX");
+                        break;
+                    case 'Div':
+                        $this->emmit($output, "DIV AX BX");
+                        break;
+                    case 'Rem':
+                        $this->emmit($output, "REM AX BX");
+                        break;
+
                     case 'Eq':
                         $this->emmit($output, "CMP AX BX");
                         $this->emmit($output, "SET_EQ AX");
@@ -142,12 +158,6 @@ class Compiler
                     case 'Or':
                         $this->emmit($output, "CMP AX BX");
                         $this->emmit($output, "SET_OR AX");
-                        break;
-                    case 'Add':
-                        $this->emmit($output, "ADD AX BX");
-                        break;
-                    case 'Sub':
-                        $this->emmit($output, "SUB AX BX");
                         break;
                     default:
                         throw new \Exception("Unknown operator $node->op");
