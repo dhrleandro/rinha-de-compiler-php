@@ -15,6 +15,8 @@ Este programa interpretará uma AST da linguagem Rinha de duas maneiras:
 
 Os dois métodos serão executados em sequência e deverão apresentar o mesmo resultado.
 
+Por enquanto o arquivo index.php irá executar apenas o método 2.
+
 ## EXPERTIMENTS
 
 A pasta `./src/experiments` não faz parte do projeto em si, mas contém estudos divertidos que esta competição me proporcionou.
@@ -30,8 +32,8 @@ git clone git@github.com:dhrleandro/rinha-de-compiler-php.git
 
 **Docker command**
 ```sh
-docker build -t rinha-de-compiler-php .
-docker run -it --memory="2g" --memory-swap="0" --cpus="2" rinha-de-compiler-php
+docker build -t dhr-rinha-de-compiler-php .
+docker run -v ./source.rinha.json:/var/rinha/source.rinha.json --memory=2gb --cpus=2 dhr-rinha-de-compiler-php
 ```
 
 or

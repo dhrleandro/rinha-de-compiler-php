@@ -38,7 +38,7 @@ class TreeWalkInterpreter
                     case 'Div':
                         if ($rhs === 0) {
                             // Dont trick me :)
-                            throw new Exception('Division by zero');
+                            throw new \Exception('Division by zero');
                         }
                         return $lhs / $rhs;
                     case 'Eq':

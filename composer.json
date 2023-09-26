@@ -1,5 +1,5 @@
 {
-    "name": "leandrodaher/rinha-de-compiler-php",
+    "name": "dhrleandro/rinha-de-compiler-php",
     "description": "Interpretador implementado em PHP para a Rinha de Compiler",
     "type": "project",
     "license": "MIT",
