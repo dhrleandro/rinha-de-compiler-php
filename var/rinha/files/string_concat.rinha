@@ -1,0 +1,3 @@
+let str_a = "Hello";
+let str_b = " World!";
+print(str_a + str_b)
