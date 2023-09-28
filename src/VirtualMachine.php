@@ -289,14 +289,24 @@ class VirtualMachine
 
     public function getLableIndex(string $identifier): int
     {
+        var_dump($identifier);
         $value = null;
         if (isset($this->labels[$identifier])) {
             $value = $this->labels[$identifier];
-        } else {
-            throw new \Exception("Undefined array key '$identifier'", 1);
+            return $value;
+        } elseif (isset($this->scopes[$this->scopeIndex][$identifier])) {
+            $anonfunc = $this->scopes[$this->scopeIndex][$identifier];
+            if (isset($this->labels[$anonfunc])) {
+                return $value;
+            }
+        } elseif (isset($this->scopes[0][$identifier])) {
+            $anonfunc = $this->scopes[0][$identifier];
+            if (isset($this->labels[$anonfunc])) {
+                return $value;
+            }
         }
 
-        return $value;
+        throw new \Exception("Undefined array key '$identifier'", 1);
     }
 
     public function compare($left, $right): void
@@ -438,6 +448,7 @@ class VirtualMachine
                     $param1 = $line[1];
                     $retHeadIndexStack->push($head);
                     $head = $this->getLableIndex($param1);
+                    var_dump($head);
                     break;
 
                 case OpCode::CMP:

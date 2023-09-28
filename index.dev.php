@@ -22,6 +22,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 // $fileName = 'tuple.json';
 // $fileName = 'tuple2.json';
 // $fileName = 'tuple3.json';
+$fileName = 'function_parameter.json';
 
 // OS TESTES ABAIXO NÃO FUNCIONAM E ESTÃO PENDENTES, SEM TEMPO PARA TEMINAR NO PRAZO POIS PRECISAREI VIAJAR HOJE
 // $fileName = 'string_concat.json';
@@ -92,9 +93,9 @@ echo "= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n\n";
 $compiler = new Compiler($astJsonFile);
 $bytecode = $compiler->start();
 $vm = new VirtualMachine($bytecode);
-// $vm->printBytecode(false);
+$vm->printBytecode(false);
 $delay = 0;
-$debug = false;
+$debug = true;
 $vm->start($delay, $debug);
 
 echo "\n";

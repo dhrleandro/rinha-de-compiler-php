@@ -57,11 +57,19 @@ class Compiler
                 break;
 
             case 'Function':
+                $this->functionIndex++;
+
                 if (is_null($lastNode) || !isset($lastNode->name->text)) {
-                    throw new \Exception("Error Processing Request", 1);
+
+                    $anonymousFunction = 'ANONFUNC'.$this->functionIndex;
+                    $this->variables[$anonymousFunction] = 'FUNCTION';
+                    $lastNode = (object) array(
+                        'name' => (object) array(
+                            'text' => $anonymousFunction
+                        )
+                    );
                 }
 
-                $this->functionIndex++;
                 $this->emmit($output, $lastNode->name->text.':');
                 foreach ($node->parameters as $param) {
                     $this->emmit($output, "DEF $param->text");
@@ -217,13 +225,27 @@ class Compiler
                 $invertedArguments = array_reverse($node->arguments, true);
                 foreach ($invertedArguments as $key => $argument) {
                     $index = $key+1;
-                    $argumentAsm = $this->compile($argument, $lastNode);
-                    $this->emmit($output, "; argument $index");
-                    $this->emmit($output, $argumentAsm);
+                    if ($argument->kind == 'Function') {
+                        $backupLastNode = $lastNode;
+                        $lastNode = $node;
+                        $this->emmit($this->functions, $this->compile($argument, $lastNode));
+                        $lastNode = $backupLastNode;
+                        $anonymousFunction = 'ANONFUNC'.$this->functionIndex;
+                        $this->emmit($output, "MOV AX $anonymousFunction");
+                    } else {
+                        $argumentAsm = $this->compile($argument, $lastNode);
+                        $this->emmit($output, "; argument $index");
+                        $this->emmit($output, $argumentAsm);
+                    }
                     $this->emmit($output, "PUSH AX ; push param AX value to top of SP (stack of params)");
                 }
                 $this->emmit($output, "; CALL End arguments");
                 $callee = implode(' ', $this->compile($node->callee, $lastNode));
+
+                // anon func
+                if (strpos($callee, 'MOV AX') !== false) {
+                    $callee = trim(str_replace('MOV AX', '', $callee));
+                }
                 $this->emmit($output, "CALL ".$callee);
                 $this->emmit($output, "POP AX");
 
@@ -249,6 +271,8 @@ class Compiler
                 break;
 
             default:
+            var_dump($this->variables);
+            var_dump($node);
                 throw new \Exception("Unknown node kind: $node->kind");
         }
     }
